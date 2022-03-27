@@ -8,15 +8,15 @@ const middleware = require("../middlewares/middleware.js");
 
 //user API's
 router.post("/register", userController.createUser);   // CreateUser
-router.post("/login", userController.login);   // LoginUser
+// router.post("/login", userController.login);   // LoginUser
 
 
 //book API's
 router.post("/books", bookController.createBook);   // CreateBook
 router.get("/books", bookController.getBooks);   //GetBooks
 router.get("/books/:bookId", bookController.getBooksById);   //GetBooksbyID
-router.put("/books/:bookId", bookController.updateBooks);   //UpdateBooks
-router.delete("/books/:bookId", bookController.deleteBooks);   //DeleteBooksbyID
+router.put("/books/:userId/:bookId", bookController.updateBooks);   //UpdateBooks
+router.delete("/books/:userId/:bookId", bookController.deleteBooks);   //DeleteBooksbyID
 
 
 //Review API's
