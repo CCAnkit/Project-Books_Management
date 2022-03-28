@@ -13,6 +13,10 @@ const isValidDetails = function(details){
     return Object.keys(details).length > 0
 }
 
+const isValidTitle = function(title){       //enum handeling
+    return ['Mr', 'Mrs', 'Miss'].indexOf(title) !== -1
+}
+
 // -----------CreateUser-----------------------------------------------------------------------------------
 const createUser = async function(req, res) {
     try{
@@ -20,14 +24,16 @@ const createUser = async function(req, res) {
         if(!isValidDetails(user)){
             res.status(400).send({status:false, msg:"Please provide the User details"})  //Validate the value that is provided by the Client.
         }
-        const {title, name, phone, email, password} = user
+        const {title, name, phone, email, password} = user   
         if (!isValidValue(title)){
             return res.status(400).send({status:false, msg:"Please provide the Title"})   //title is mandory 
+        }
+        if (!isValidTitle(title)){
+            return res.status(400).send({status:false, msg:"Please should be Mr || Mrs || Miss"})   //Enum is mandory 
         }
         if (!isValidValue(name)){
             return res.status(400).send({status:false, msg:"Please provide the Name"})   //name is mandory 
         }
-
         if (!isValidValue(phone)){
             return res.status(400).send({status:false, msg:"Please provide phone number"})    //phone is mandory
         }
@@ -44,7 +50,7 @@ const createUser = async function(req, res) {
         if(!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)){
             return res.status(400).send({status:false,msg:"Please provide valid Email Address"})    //Regex for checking the valid email format 
         }
-        const emailUsed = await userModel.findOne({email})  //unique is email
+        const emailUsed = await userModel.findOne({email})    //unique is email
         if(emailUsed){
             return res.status(400).send({status:false, msg:`${email} is already exists`})   //checking the email address is already exist or not.
         }
@@ -67,27 +73,27 @@ const createUser = async function(req, res) {
 // -------------UserLogin-----------forAuthentication----------------------------------------------------------------------------
 const login = async function(req, res) {
     try{
-        let login = req.body
+        const login = req.body
         if (!isValidDetails(login)){
-            return res.status(400).send({ status: false, msg: "Please provide login Details" })
+            return res.status(400).send({ status: false, msg: "Please provide the login Details" })   //validating the parameters of body
         }
         const {email, password} = login
         if (!isValidValue(email)){
-            return res.status(400).send({status:false, msg:"Please provide the Email Address"})   //Validate the value that is provided by the Client.
+            return res.status(400).send({status:false, msg:"Please provide the Email Address"})   //email is mandatory
         }
         if (!isValidValue(password)){
-            return res.status(400).send({status:false, msg:"Please provide the password"})  //checks that the password is correct or not.
+            return res.status(400).send({status:false, msg:"Please provide the password"})  //password is mandatory
         }
-        let isValidUser = await userModel.findOne({email, password});  //finding the email/password in the authors.
+        const isValidUser = await userModel.findOne({email, password});   //validating the email/password in the userModel.
         if (!isValidUser){
         return res.status(401).send({status: false, msg: "Email or Password is not correct, Please check your credentials again.",})    
         }  
-        let token = jwt.sign(   //creating the token for the authentication.
+        const token = jwt.sign(   //creating the token for the authentication.
             {
                 _id : isValidUser._id   //payload(details that we saved in this token)
             },
-                "Project-Books", { expiresIn: '30000mins' });  //secret key
-        res.setHeader("x-api-key", token);  //setting token to header
+                "Project-Books", { expiresIn: '30000mins' });  //secret key with the expiry
+        res.setHeader("x-api-key", token);  //setting token in header
         res.status(200).send({ status: true, message: `User logged in successfully`, data: { token } });  
     }
     catch(err) {

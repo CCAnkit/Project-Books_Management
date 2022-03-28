@@ -1,5 +1,6 @@
 const bookModel = require("../models/bookModel.js");
 const reviewModel = require("../models/reviewModel.js");
+const moment = require("moment");
 
 // -----------validation-----------------------------------------------------------------------------------
 const isValidValue = function(value){   //it should not be like undefined or null.
@@ -16,37 +17,39 @@ const isValidDetails = function(details){
 // -----------CreateReview-----------------------------------------------------------------------------------
 const createReview = async function(req, res) {
     try{
-        const review = req.body
+        const review = req.body 
         const bookId = req.params.bookId
         const {reviewedBy, rating} = review
-        
-        const isValidBookId = await bookModel.findOne({_id : bookId, isDeleted : false})
-        if (!isValidBookId) {
-            return res.status().send({status: true, msg: "No book found with this provided Book ID"})   //check the bookId in book model
-        }
-        if(isValidBookId['isDeleted'] == true){
-            return res.status(404).send({status:true, msg:"The book is no longer present."})
-        }
+        const isValidBookId = await bookModel.findOne({_id : bookId, isDeleted:false})
+        if(!isValidBookId){
+            return res.status(404).send({status:true, msg:"no book found."})            
+        }       
         if(!isValidDetails(review)){
-            res.status(400).send({status:false, msg:"Please provide the details"})  //Validate the value that is provided by the Client.
+            return res.status(400).send({status:false, msg:"please provide review of the book"})
         }
         if(!isValidValue(reviewedBy)){
-            return res.status(400).send({status:false, msg:"please provide who reviewed the book"})         //reviewBy is mandory 
+            return res.status(400).send({status:false, msg:"please provide who reviewed the book"})
         }
-        if(!isValidValue(rating)){      
-            return res.status(400).send({status:false, msg:"please provide the rating"})        //ratings is mandory
-        }       
+        if(!isValidValue(rating)){
+            return res.status(400).send({status:false, msg:"please provide the rating"})
+        }
         if((rating<1) || (rating>5)){
             return res.status(400).send({status:false, msg:"rating should be greater than 1 and less than 5"})
         }
-        const release = moment().format("YYYY-MM-DD, h-mm-ss");
+        const release = moment().format("YYYY-MM-DD");
         const finalData = {
             bookId : bookId,
             ...review,
-            releasedAt : release
+            reviewedAt : release
         }
         const data = await reviewModel.create(finalData)
         res.status(201).send({status:true, msg:"book review saved successfully",data:data})
+        
+        let reviewCount = await reviewModel.find({ bookId: bookId }).count();
+        let countUpdate = await bookModel.findOneAndUpdate(
+            { _id: req.params.bookId },
+            { reviews: reviewCount }
+        );
     }
     catch(err) {
         console.log(err)
@@ -68,21 +71,24 @@ const updateReview = async function(req, res) {
         if (!IsValidReviewId){
             return res.status(400).send({status:true, msg:"no review exists to update."})
         }
-        const userIdFromParam = req.params.userId
-        const userIdFromBook = IsValidBookId.userId.toString()    //change the userId to string
-        if (userIdFromParam !== userIdFromBook) {          // for similar userId from param & bookModel to update
+        const bookIdFromReview = IsValidReviewId.bookId
+        const userIdFromReview = await bookModel.findById(bookIdFromReview)
+        if (userIdFromReview.userId.toString() !== IsValidBookId.userId.toString()) {          // for similar userId from param & bookModel to update
             return res.status(403).send({status : false, msg : "Unauthorized access. Review can't be updated"})
         }
+
         const dataToUpdate = req.body
         if(!isValidDetails(dataToUpdate)){
             res.status(400).send({status:false, msg:"Please provide the review details to update"})  //Validate the value that is provided by the Client.
         }
         const {review, rating, reviewedBy} = dataToUpdate
+        if((rating<1) || (rating>5)){
+            return res.status(400).send({status:false, msg:"rating should be greater than 1 and less than 5"})}
         const updatedDetails = await reviewModel.findOneAndUpdate(
             {_id : reviewId},   
             {review : review, rating : rating, reviewedBy : reviewedBy},
-            {new : true, upsert : true})
-        res.status(201).send({status:true, msg:"review updated successfully", data:updatedDetails})        
+            {new : true})
+        res.status(201).send({status:true, msg:"review updated successfully", data:updatedDetails})
     }
     catch(err) {
         console.log(err)
@@ -104,16 +110,17 @@ const deleteReview = async function(req, res) {
         if (!IsValidReviewId){
             return res.status(404).send({status:true, msg:"no review exists to delete."})
         }
-        const userIdFromParam = req.params.userId
-        const userIdFromBook = IsValidBookId.userId.toString()    //change the userId to string
-        if (userIdFromParam !== userIdFromBook) {          // for similar userId from param & bookModel to update
-            return res.status(403).send({status : false, msg : "Unauthorized access. Review can't be deleted"})
+        const bookIdFromReview = IsValidReviewId.bookId
+        const userIdFromReview = await bookModel.findById(bookIdFromReview)
+        if (userIdFromReview.userId.toString() !== IsValidBookId.userId.toString()) {          // for similar userId from param & bookModel to update
+            return res.status(403).send({status : false, msg : "Unauthorized access. Review can't be delete"})
         }
+
         const deletedData = await reviewModel.findOneAndUpdate(
             {_id : reviewId},   
             {isDeleted : true, deletedAt : new Date()},
             {new : true})
-        res.status(201).send({status:true, msg:"review deleted successfully", data:deletedData})    
+        res.status(201).send({status:true, msg:"review deleted successfully", data:deletedData})
     }
     catch(err) {
         console.log(err)

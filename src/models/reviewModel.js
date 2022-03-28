@@ -4,8 +4,7 @@ const ObjectId= mongoose.Schema.Types.ObjectId
 const reviewSchema = new mongoose.Schema({
     bookId: {
         type : ObjectId,
-        refs : "bookDetails",
-        required : true
+        refs : "bookDetails"
     },
     reviewedBy: {
         type : String,
@@ -14,8 +13,7 @@ const reviewSchema = new mongoose.Schema({
         value: "reviewer's name"
     },
     reviewedAt: {
-        type : Date,
-        required : true
+        type : Date
     },
     rating: {
         type : Number,
@@ -25,7 +23,7 @@ const reviewSchema = new mongoose.Schema({
     },
     review: {String},
     isDeleted: {
-        typr : Boolean,
+        type : Boolean,
         default: false
     }
 },{ timestamps: true });
