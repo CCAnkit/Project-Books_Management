@@ -45,10 +45,10 @@ const createReview = async function(req, res) {
         const data = await reviewModel.create(finalData)
         res.status(201).send({status:true, msg:"book review saved successfully",data:data})
         
-        const reviewCount = await reviewModel.find({ bookId: bookId, isDeleted:false}).count();
+        const reviewCount = await reviewModel.find({ bookId: bookId, isDeleted:false})
         const countUpdate = await bookModel.findOneAndUpdate(
             { _id: req.params.bookId },
-            { reviews: reviewCount }
+            { reviews: reviewCount.length }
         );
     }
     catch(err) {
@@ -121,7 +121,7 @@ const deleteReview = async function(req, res) {
             {isDeleted : true, deletedAt : new Date()},
             {new : true})
         res.status(201).send({status:true, msg:"review deleted successfully", data:deletedData})
-        const reviewCount = await reviewModel.find({ bookId: bookId,  isDeleted:false}).count();
+        const reviewCount = await reviewModel.find({ bookId: bookId,  isDeleted:false})
         const countUpdate = await bookModel.findOneAndUpdate(
             { _id: req.params.bookId },
             { reviews: reviewCount.length }

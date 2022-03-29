@@ -22,7 +22,7 @@ const createBook = async function(req, res) {
     try{
         const book = req.body
         if(!isValidDetails(book)){
-            res.status(400).send({status:false, msg:"Please provide the Book details"})  //Validate the value that is provided by the Client.
+            res.status(400).send({status:false, msg:"Please provide the Book details"})   //Validate the value that is provided by the Client.
         }
         const {title, excerpt, userId, ISBN, category, subcategory, releasedAt} = book
         if (!isValidValue(title)){
@@ -35,9 +35,9 @@ const createBook = async function(req, res) {
         if (!isValidValue(excerpt)){
             return res.status(400).send({status:false, msg:"Please provide the excerpt"})   //Excerpt is Mandory 
         }
-        if (!isValidValue(userId)){
-            return res.status(400).send({status:false, msg:"Please provide the User Id"})   //UserID is Mandory 
-        }
+        // if (!isValidValue(userId)){
+        //     return res.status(400).send({status:false, msg:"Please provide the User Id"})   //UserID is Mandory 
+        // }
         const isValidUserId = await userModel.findById(userId)
         if (!isValidUserId){
             return res.status(404).send({status:true, msg:"User not found."})   //find User in userModel
@@ -170,11 +170,6 @@ const deleteBooks = async function(req, res) {
         if (!IsValidBookId){
             return res.status(404).send({status:true, msg:"No book found."})
         }
-        // const userIdFromParam = req.params.userId
-        // const userIdFromBook = IsValidBookId.userId.toString()    //change the userId to string
-        // if (userIdFromParam !== userIdFromBook) {          //for checking thez similar userId from param & bookModel 
-        //     return res.status(403).send({status : false, msg : "This is not your book, you can not delete it."})
-        // }
         const deletedDetails = await bookModel.findOneAndUpdate(
             {_id : bookId},    //finding the bookId and mark the isDeleted to true & update the date at deletedAt.
             {isDeleted : true, deletedAt : new Date()},
