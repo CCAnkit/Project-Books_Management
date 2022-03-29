@@ -16,6 +16,7 @@ const isValidDetails = function(details){
     return Object.keys(details).length > 0
 }
 
+
 // -----------CreateBooks-----------------------------------------------------------------------------------
 const createBook = async function(req, res) {
     try{
@@ -29,7 +30,7 @@ const createBook = async function(req, res) {
         }
         const isDuplicateTitle = await bookModel.findOne({title: title})
         if (isDuplicateTitle){
-            return res.status(400).send({status:true, msg:"Title already exists."})   //Title is Unique 
+            return res.status(400).send({status:true, msg:"Title is already exists."})   //Title is Unique 
         }
         if (!isValidValue(excerpt)){
             return res.status(400).send({status:false, msg:"Please provide the excerpt"})   //Excerpt is Mandory 
@@ -46,7 +47,7 @@ const createBook = async function(req, res) {
         }
         const isDuplicateISBN = await bookModel.findOne({ISBN: ISBN})
         if (isDuplicateISBN){
-            return res.status(400).send({status:true, msg:"ISBN already exists."})   //ISBN is unique 
+            return res.status(400).send({status:true, msg:"ISBN is already exists."})   //ISBN is unique 
         }
         if (!isValidValue(category)){
             return res.status(400).send({status:false, msg:"Please provide the Category"})   //Category is mandory 
@@ -58,10 +59,10 @@ const createBook = async function(req, res) {
             return res.status(400).send({status:false, msg:"Please provide the release date of book."})   //release date is mandory 
         }
         if(!(/^\d{4}-\d{2}-\d{2}$/.test(releasedAt))){   //regex for checking the correct format of release date 
-            return res.status(400).send({status:false,msg:`${releasedAt} is an invalid date, formate should be YYYY-MM-DD`})
+            return res.status(400).send({status:false,msg:`${releasedAt} is an invalid date, formate should be like this YYYY-MM-DD`})
         }
         const saved = await bookModel.create(book)  //creating the Book details
-        res.status(201).send({status: true, msg : "Book created successfully.", data: saved})
+        res.status(201).send({status: true, msg : "Book is created successfully.", data: saved})
 
     }
     catch(err) {
@@ -84,7 +85,7 @@ const getBooks = async function(req, res) {
         }
         const findBooks = await bookModel.find(filter).select({title : 1, excerpt : 1, userId : 1, category : 1, releasedAt : 1, reviews : 1})    //finding the book with filters
         if (findBooks.length == 0){
-            return res.status(404).send({status:true, msg:"no book found."})       //Validate the value that is provided by the Client.
+            return res.status(404).send({status:true, msg:"No book found."})       //Validate the value that is provided by the Client.
         }
         const sortedBooks = findBooks.sort(function(a, b){      //Sorting the books in the Alphabetically order
             if(a.title < b.title) { return -1; }            
@@ -126,7 +127,7 @@ const getBooksById = async function(req, res) {
 const updateBooks = async function(req, res) {
     try{
         const bookId = req.params.bookId
-        const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted:false})
+        const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted : false})        //finding the bookId
         if (!IsValidBookId){
             return res.status(404).send({status:true, msg:"no book found."})
         }
@@ -140,16 +141,16 @@ const updateBooks = async function(req, res) {
             res.status(400).send({status:false, msg:"Please provide the Book details to update"})  //Validate the value that is provided by the Client.
         }
         const {title, ISBN} = dataToUpdate
-        const isDuplicateTitle = await bookModel.findOne({title:title})     //
+        const isDuplicateTitle = await bookModel.findOne({title : title})     //Title is unique
         if (isDuplicateTitle){
-            return res.status(400).send({staus:false, msg:"book with provided title is already present."})
+            return res.status(400).send({staus:false, msg:"Book with provided title is already present."})
         }
-        const isDuplicateISBN = await bookModel.findOne({ISBN:ISBN})        //
+        const isDuplicateISBN = await bookModel.findOne({ISBN:ISBN})        //ISBN is unique
         if (isDuplicateISBN){
-            return res.status(400).send({staus:false, msg:"book with provided ISBN no. is already present."})
+            return res.status(400).send({staus:false, msg:"Book with provided ISBN no. is already present."})
         }
         const updatedDetails = await bookModel.findOneAndUpdate(
-            {_id : bookId},    //update the title, body, tage & subcategory.
+            {_id : bookId},    //Find the bookId and update these title, excerpt & ISBN.
             {title : dataToUpdate.title, excerpt : dataToUpdate.excerpt, ISBN : dataToUpdate.ISBN},
             {new : true, upsert : true})    //ispublished will be true and update the date at publishAt.
         res.status(201).send({status:true, msg: "book details updated successfully", data:updatedDetails})
@@ -165,21 +166,20 @@ const updateBooks = async function(req, res) {
 const deleteBooks = async function(req, res) {
     try{
         const bookId = req.params.bookId
-        const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted:false})      //
+        const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted : false})      //finding the bookId
         if (!IsValidBookId){
-            return res.status(404).send({status:true, msg:"no book found."})
+            return res.status(404).send({status:true, msg:"No book found."})
         }
-        const userIdFromParam = req.params.userId
-        const userIdFromBook = IsValidBookId.userId.toString()    //change the userId to string
-        if (userIdFromParam !== userIdFromBook) {          // for similar userId from param & bookModel to update
-            return res.status(403).send({status : false, msg : "This is not your book, you can not delete it."})
-        }
+        // const userIdFromParam = req.params.userId
+        // const userIdFromBook = IsValidBookId.userId.toString()    //change the userId to string
+        // if (userIdFromParam !== userIdFromBook) {          //for checking thez similar userId from param & bookModel 
+        //     return res.status(403).send({status : false, msg : "This is not your book, you can not delete it."})
+        // }
         const deletedDetails = await bookModel.findOneAndUpdate(
-            {_id : bookId},    //update the title, body, tage & subcategory.
+            {_id : bookId},    //finding the bookId and mark the isDeleted to true & update the date at deletedAt.
             {isDeleted : true, deletedAt : new Date()},
-            {new : true})    //ispublished will be true and update the date at publishAt.
-        res.status(201).send({status:true, msg:"book deleted successfully",data:deletedDetails})
-        
+            {new : true})    
+        res.status(201).send({status:true, msg:"Book deleted successfully",data:deletedDetails})       
     }
     catch(err) {
         console.log(err)

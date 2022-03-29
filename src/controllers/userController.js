@@ -37,9 +37,9 @@ const createUser = async function(req, res) {
         if (!isValidValue(phone)){
             return res.status(400).send({status:false, msg:"Please provide phone number"})    //phone is mandory
         }
-        // if(!/^(?:(?:\+|0{0,2})91(\s*[\ -]\s*)?|[0]?)?[789]\d{9}|(\d[ -]?){10}\d$/.test(phone)){
-        //     return res.status(400).send({status:false,msg:"Please provide valid phone number"})    //Regex for checking the valid phone format
-        // }
+        if(!/^(?:(?:\+|0{0,2})91(\s*[\ -]\s*)?|[0]?)?[789]\d{9}|(\d[ -]?){10}\d$/.test(phone)){
+            return res.status(400).send({status:false,msg:"Please provide valid phone number"})    //Regex for checking the valid phone format
+        }
         const phoneUsed = await userModel.findOne({phone})   //phone is unique
         if(phoneUsed){
             return res.status(400).send({status:false, msg:`${phone} is already exists`})   //checking the phone number is already exist or not.

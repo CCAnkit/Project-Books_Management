@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
+const bookModel = require("../models/bookModel.js");
 
-let authentication = async function(req, res, next){        //authentication for the token validation. 
+
+const authentication = async function(req, res, next){        //authentication for the token validation. 
     try{
         let token = req.headers['x-api-key']        //header
         if (!token){
@@ -14,9 +16,12 @@ let authentication = async function(req, res, next){        //authentication for
     }
 }
 
-let authorizationToCreate = async function(req, res, next){         //authorization for the authorized user
+const authorizationToCreate = async function(req, res, next){         //authorization for the authorized user
     try {
         const token = req.headers['x-api-key']      //header
+        if (!token){
+            return res.status(400).send({ msg: "Token must be present" });      //validating the token is present in headers or not.
+        }
         const decodedToken = jwt.verify(token, "Project-Books");        //verify the secret key
         const userLoggedIn = decodedToken._id       //decode token by checking the userId
         const userIdFromBody = req.body.userId      
@@ -30,9 +35,12 @@ let authorizationToCreate = async function(req, res, next){         //authorizat
     }
 }
 
-let authorization = async function(req, res, next){         //authorization for the authorized user
+const authorization = async function(req, res, next){         //authorization for the authorized user
     try {
         const token = req.headers['x-api-key']      //header
+        if (!token){
+            return res.status(400).send({ msg: "Token must be present" });      //validating the token is present in headers or not.
+        }
         const decodedToken = jwt.verify(token, "Project-Books");        //verify the secret key
         const userLoggedIn = decodedToken._id       //decode token by checking the userId
         const bookId = req.params.bookId
