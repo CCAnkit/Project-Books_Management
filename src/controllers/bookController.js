@@ -11,7 +11,9 @@ const createBook = async function(req, res) {
             res.status(400).send({status:false, msg:"Please provide the Book details"})   //Validate the value that is provided by the Client.
         }
         const {title, excerpt, userId, ISBN, category, subcategory, releasedAt} = book
-        
+        if (userId != req.userId) {
+            return res.status(403).send({status: false, message: "Unauthorized access."})
+        }
         if (!validator.isValidValue(title)){
             return res.status(400).send({status:false, msg:"Please provide the Title"})   //Title is Mandory 
         }
@@ -62,9 +64,6 @@ const createBook = async function(req, res) {
 // -----------GetBooks-----------------------------------------------------------------------------------
 const getAllBooks = async function(req, res) {
     try{
-        // if(!isValidUserId.length == 0){
-        //     res.status(404).send({status:false, msg:"No Book found with the provided user ID"})  //Validate the value that is provided by the Client.
-        // }
         const querry = req.query
         const filter = {
             ...querry,         //store the conditions in filter variable
@@ -75,12 +74,10 @@ const getAllBooks = async function(req, res) {
         if (findBooks.length == 0){
             return res.status(404).send({status:true, msg:"No book found."})       //Validate the value that is provided by the Client.
         }
-        const sortedBooks = findBooks.sort(function(a, b){      //Sorting the books in the Alphabetically order
-            if(a.title < b.title) { return -1; }            
-            if(a.title > b.title) { return 1; }
-            return 0;
-        })
-        res.status(200).send({status: true, msg: "Books list", data: sortedBooks})  
+        if (findBooks.userId != req.userId) {
+            return res.status(403).send({status: false, message: "Unauthorized access."})
+        }
+        res.status(200).send({status: true, msg: "Books list", data: findBooks})  
     }
     catch(err) {
         console.log(err)
@@ -96,6 +93,9 @@ const getBooksById = async function(req, res) {
         const bookDetails = await bookModel.findOne({_id : bookId, isDeleted:false})     //finding the bookId
         if (!bookDetails){
             return res.status(404).send({status:true, msg:"No books found."})     //If no Books found in bookModel
+        }
+        if (bookDetails.userId != req.userId) {
+            return res.status(403).send({status: false, message: "Unauthorized access."})
         }
         const reviews = await reviewModel.find({bookId : bookId})     //finding the bookId in review Model
         const finalBookDetails = {
@@ -118,6 +118,9 @@ const updateBooks = async function(req, res) {
         const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted : false})        //finding the bookId
         if (!IsValidBookId){
             return res.status(404).send({status:true, msg:"no book found."})
+        }
+        if (IsValidBookId.userId != req.userId) {
+            return res.status(403).send({status: false, message: "Unauthorized access."})
         }
         const dataToUpdate = req.body
         if(!validator.isValidDetails(dataToUpdate)){
@@ -152,6 +155,9 @@ const deleteBooks = async function(req, res) {
         const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted : false})      //finding the bookId
         if (!IsValidBookId){
             return res.status(404).send({status:true, msg:"No book found."})
+        }
+        if (IsValidBookId.userId != req.userId) {
+            return res.status(403).send({status: false, message: "Unauthorized access."})
         }
         const deletedDetails = await bookModel.findOneAndUpdate(
             {_id : bookId},    //finding the bookId and mark the isDeleted to true & update the date at deletedAt.
