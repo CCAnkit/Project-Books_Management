@@ -12,7 +12,7 @@ const createBook = async function(req, res) {
         }
         const {title, excerpt, userId, ISBN, category, subcategory, releasedAt} = book
         if (userId != req.userId) {
-            return res.status(403).send({status: false, message: "Unauthorized access."})
+            return res.status(403).send({status: false, message: "Unauthorized access."})   //validating that the userId from body is similar to the token
         }
         if (!validator.isValidValue(title)){
             return res.status(400).send({status:false, msg:"Please provide the Title"})   //Title is Mandory 
@@ -24,9 +24,6 @@ const createBook = async function(req, res) {
         if (!validator.isValidValue(excerpt)){
             return res.status(400).send({status:false, msg:"Please provide the excerpt"})   //Excerpt is Mandory 
         }
-        // if (!validator.isValidValue(userId)){
-        //     return res.status(400).send({status:false, msg:"Please provide the User Id"})   //UserID is Mandory 
-        // }
         const isValidUserId = await userModel.findById(userId)
         if (!isValidUserId){
             return res.status(404).send({status:true, msg:"User not found."})   //find User in userModel
@@ -71,11 +68,12 @@ const getAllBooks = async function(req, res) {
         }
         const findBooks = await bookModel.find(filter).select({title : 1, excerpt : 1, userId : 1, category : 1, releasedAt : 1, reviews : 1}).sort({title : 1})
         //finding the book with filters
-        if (findBooks.length == 0){
-            return res.status(404).send({status:true, msg:"No book found."})       //Validate the value that is provided by the Client.
+
+        if (findBooks.length == 0){         //validating that the userId from body is similar to the token
+            return res.status(404).send({status:true, msg:"No book found."})       
         }
         if (findBooks.userId != req.userId) {
-            return res.status(403).send({status: false, message: "Unauthorized access."})
+            return res.status(403).send({status: false, message: "Unauthorized access."})       //validating that the userId from body is similar to the token
         }
         res.status(200).send({status: true, msg: "Books list", data: findBooks})  
     }
@@ -94,7 +92,7 @@ const getBooksById = async function(req, res) {
         if (!bookDetails){
             return res.status(404).send({status:true, msg:"No books found."})     //If no Books found in bookModel
         }
-        if (bookDetails.userId != req.userId) {
+        if (bookDetails.userId != req.userId) {         //validating that the userId from body is similar to the token
             return res.status(403).send({status: false, message: "Unauthorized access."})
         }
         const reviews = await reviewModel.find({bookId : bookId})     //finding the bookId in review Model
@@ -119,7 +117,7 @@ const updateBooks = async function(req, res) {
         if (!IsValidBookId){
             return res.status(404).send({status:true, msg:"no book found."})
         }
-        if (IsValidBookId.userId != req.userId) {
+        if (IsValidBookId.userId != req.userId) {       //validating that the userId from body is similar to the token
             return res.status(403).send({status: false, message: "Unauthorized access."})
         }
         const dataToUpdate = req.body
@@ -156,7 +154,7 @@ const deleteBooks = async function(req, res) {
         if (!IsValidBookId){
             return res.status(404).send({status:true, msg:"No book found."})
         }
-        if (IsValidBookId.userId != req.userId) {
+        if (IsValidBookId.userId != req.userId) {        //validating that the userId from body is similar to the token
             return res.status(403).send({status: false, message: "Unauthorized access."})
         }
         const deletedDetails = await bookModel.findOneAndUpdate(
@@ -171,8 +169,8 @@ const deleteBooks = async function(req, res) {
     }
 }
 
-    module.exports.createBook = createBook;
-    module.exports.getAllBooks = getAllBooks;
-    module.exports.getBooksById = getBooksById;
-    module.exports.updateBooks = updateBooks;
-    module.exports.deleteBooks = deleteBooks;
+module.exports.createBook = createBook;
+module.exports.getAllBooks = getAllBooks;
+module.exports.getBooksById = getBooksById;
+module.exports.updateBooks = updateBooks;
+module.exports.deleteBooks = deleteBooks;
