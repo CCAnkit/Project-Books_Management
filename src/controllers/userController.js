@@ -71,7 +71,7 @@ const login = async function(req, res) {
             return res.status(400).send({status:false, msg:"Please provide the password"})  //password is mandatory
         }
         const User = await userModel.findOne({email, password});   //validating the email/password in the userModel.
-        if (!isValidUser){
+        if (!User){
         return res.status(401).send({status: false, msg: "Email or Password is not correct, Please check your credentials again.",})    
         }  
         const token = jwt.sign(   //creating the token for the authentication.
