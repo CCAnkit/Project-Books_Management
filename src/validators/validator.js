@@ -16,8 +16,6 @@ const isValidTitle = function(title) {
     return ['Mr', 'Mrs', 'Miss'].indexOf(title) !== -1      //enum validation
 }
 
-module.exports = {
-    isValidValue,
-    isValidDetails,
-    isValidTitle
-}
+module.exports.isValidValue = isValidValue;
+module.exports.isValidDetails = isValidDetails;
+module.exports.isValidTitle = isValidTitle;
