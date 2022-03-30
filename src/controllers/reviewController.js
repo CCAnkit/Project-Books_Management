@@ -1,18 +1,7 @@
+const moment = require("moment");
 const bookModel = require("../models/bookModel.js");
 const reviewModel = require("../models/reviewModel.js");
-const moment = require("moment");
-
-// -----------validation-----------------------------------------------------------------------------------
-const isValidValue = function(value){   //it should not be like undefined or null.
-    if (typeof value === 'undefined' || value === null) return false   //if the value is undefined or null it will return false.
-    if (typeof value === 'string' && value.trim().length === 0) return false   //if the value is string & length is 0 it will return false.
-    return true
-}
-    
-const isValidDetails = function(details){   
-    return Object.keys(details).length > 0
-}
-
+const validator = require('../validators/validator.js');
 
 // -----------CreateReview-----------------------------------------------------------------------------------
 const createReview = async function(req, res) {
@@ -24,13 +13,13 @@ const createReview = async function(req, res) {
         if(!isValidBookId){
             return res.status(404).send({status:true, msg:"no book found."})      
         }       
-        if(!isValidDetails(review)){
+        if(!validator.isValidDetails(review)){
             return res.status(400).send({status:false, msg:"please provide review of the book"})        //review is mandatory
         }
-        if(!isValidValue(reviewedBy)){
+        if(!validator.isValidValue(reviewedBy)){
             return res.status(400).send({status:false, msg:"please provide who reviewed the book"})     //reviewedBy is mandatory
         }
-        if(!isValidValue(rating)){
+        if(!validator.isValidValue(rating)){
             return res.status(400).send({status:false, msg:"please provide the rating"})        //rating is mandatory
         }
         if((rating<1) || (rating>5)){       //ratings should be in between 1 to 5.
@@ -64,7 +53,7 @@ const updateReview = async function(req, res) {
         const bookId = req.params.bookId
         const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted:false})      //finding the bookId
         if (!IsValidBookId){
-            return res.status(404).send({status:true, msg:"no book found to update review."})       //
+            return res.status(404).send({status:true, msg:"No book found to update review."})       //
         }
         const reviewId = req.params.reviewId        
         const IsValidReviewId = await reviewModel.findOne({_id : reviewId, isDeleted:false})        //finding the reviewId
@@ -77,7 +66,7 @@ const updateReview = async function(req, res) {
             return res.status(403).send({status : false, msg : "Unauthorized access. Review can't be updated"})
         }
         const dataToUpdate = req.body
-        if(!isValidDetails(dataToUpdate)){
+        if(!validator.isValidDetails(dataToUpdate)){
             res.status(400).send({status:false, msg:"Please provide the review details to update"})  //Validate the value that is provided by the Client.
         }
         const {review, rating, reviewedBy} = dataToUpdate
@@ -103,7 +92,7 @@ const deleteReview = async function(req, res) {
         const bookId = req.params.bookId
         const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted:false})
         if (!IsValidBookId){
-            return res.status(404).send({status:true, msg:"no book found to delete review."})
+            return res.status(404).send({status:true, msg:"No book found to delete review."})
         }
         const reviewId = req.params.reviewId
         const IsValidReviewId = await reviewModel.findOne({_id : reviewId, isDeleted:false})
@@ -120,7 +109,8 @@ const deleteReview = async function(req, res) {
             {_id : reviewId},     //finding the reviewId and mark the isDeleted to true & update the date at deletedAt.
             {isDeleted : true, deletedAt : new Date()},
             {new : true})
-        res.status(201).send({status:true, msg:"review deleted successfully", data:deletedData})
+        res.status(201).send({status:true, msg:"Review deleted successfully", data:deletedData})
+
         const reviewCount = await reviewModel.find({ bookId: bookId,  isDeleted:false})
         const countUpdate = await bookModel.findOneAndUpdate(
             { _id: req.params.bookId },
@@ -134,6 +124,8 @@ const deleteReview = async function(req, res) {
 }
 
 
-module.exports.createReview = createReview;
-module.exports.updateReview = updateReview;
-module.exports.deleteReview = deleteReview;
+module.exports = {
+    createReview,
+    updateReview,
+    deleteReview,
+}

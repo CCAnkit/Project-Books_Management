@@ -1,61 +1,48 @@
-const moment = require("moment");
 const bookModel = require("../models/bookModel.js");
 const userModel = require("../models/userModel.js");
 const reviewModel = require("../models/reviewModel.js");
-
-
-
-// -----------validation-----------------------------------------------------------------------------------
-const isValidValue = function(value){   //it should not be like undefined or null.
-    if (typeof value === 'undefined' || value === null) return false   //if the value is undefined or null it will return false.
-    if (typeof value === 'string' && value.trim().length === 0) return false   //if the value is string & length is 0 it will return false.
-    return true
-}
-    
-const isValidDetails = function(details){   
-    return Object.keys(details).length > 0
-}
-
+const validator = require('../validators/validator.js');
 
 // -----------CreateBooks-----------------------------------------------------------------------------------
 const createBook = async function(req, res) {
     try{
         const book = req.body
-        if(!isValidDetails(book)){
+        if(!validator.isValidDetails(book)){
             res.status(400).send({status:false, msg:"Please provide the Book details"})   //Validate the value that is provided by the Client.
         }
         const {title, excerpt, userId, ISBN, category, subcategory, releasedAt} = book
-        if (!isValidValue(title)){
+        
+        if (!validator.isValidValue(title)){
             return res.status(400).send({status:false, msg:"Please provide the Title"})   //Title is Mandory 
         }
         const isDuplicateTitle = await bookModel.findOne({title: title})
         if (isDuplicateTitle){
             return res.status(400).send({status:true, msg:"Title is already exists."})   //Title is Unique 
         }
-        if (!isValidValue(excerpt)){
+        if (!validator.isValidValue(excerpt)){
             return res.status(400).send({status:false, msg:"Please provide the excerpt"})   //Excerpt is Mandory 
         }
-        // if (!isValidValue(userId)){
+        // if (!validator.isValidValue(userId)){
         //     return res.status(400).send({status:false, msg:"Please provide the User Id"})   //UserID is Mandory 
         // }
         const isValidUserId = await userModel.findById(userId)
         if (!isValidUserId){
             return res.status(404).send({status:true, msg:"User not found."})   //find User in userModel
         }
-        if (!isValidValue(ISBN)){
+        if (!validator.isValidValue(ISBN)){
             return res.status(400).send({status:false, msg:"Please provide the ISBN"})   //ISBN is mandory 
         }
         const isDuplicateISBN = await bookModel.findOne({ISBN: ISBN})
         if (isDuplicateISBN){
             return res.status(400).send({status:true, msg:"ISBN is already exists."})   //ISBN is unique 
         }
-        if (!isValidValue(category)){
+        if (!validator.isValidValue(category)){
             return res.status(400).send({status:false, msg:"Please provide the Category"})   //Category is mandory 
         }
-        if (!isValidValue(subcategory)){
+        if (!validator.isValidValue(subcategory)){
             return res.status(400).send({status:false, msg:"Please provide the subCategory"})   //subcategory is mandory 
         }
-        if (!isValidValue(releasedAt)){
+        if (!validator.isValidValue(releasedAt)){
             return res.status(400).send({status:false, msg:"Please provide the release date of book."})   //release date is mandory 
         }
         if(!(/^\d{4}-\d{2}-\d{2}$/.test(releasedAt))){   //regex for checking the correct format of release date 
@@ -73,7 +60,7 @@ const createBook = async function(req, res) {
 
 
 // -----------GetBooks-----------------------------------------------------------------------------------
-const getBooks = async function(req, res) {
+const getAllBooks = async function(req, res) {
     try{
         // if(!isValidUserId.length == 0){
         //     res.status(404).send({status:false, msg:"No Book found with the provided user ID"})  //Validate the value that is provided by the Client.
@@ -83,7 +70,8 @@ const getBooks = async function(req, res) {
             ...querry,         //store the conditions in filter variable
             isDeleted : false
         }
-        const findBooks = await bookModel.find(filter).select({title : 1, excerpt : 1, userId : 1, category : 1, releasedAt : 1, reviews : 1})    //finding the book with filters
+        const findBooks = await bookModel.find(filter).select({title : 1, excerpt : 1, userId : 1, category : 1, releasedAt : 1, reviews : 1}).sort({title : 1})
+        //finding the book with filters
         if (findBooks.length == 0){
             return res.status(404).send({status:true, msg:"No book found."})       //Validate the value that is provided by the Client.
         }
@@ -131,13 +119,8 @@ const updateBooks = async function(req, res) {
         if (!IsValidBookId){
             return res.status(404).send({status:true, msg:"no book found."})
         }
-        // const userIdFromParam = req.params.userId
-        // const userIdFromBook = IsValidBookId.userId.toString()    //change the userId to string
-        // if (userIdFromParam !== userIdFromBook) {          // for similar userId from param & bookModel to update
-        //     return res.status(403).send({status : false, msg : "This is not your book, you can not update it."})
-        // }
         const dataToUpdate = req.body
-        if(!isValidDetails(dataToUpdate)){
+        if(!validator.isValidDetails(dataToUpdate)){
             res.status(400).send({status:false, msg:"Please provide the Book details to update"})  //Validate the value that is provided by the Client.
         }
         const {title, ISBN} = dataToUpdate
@@ -182,8 +165,10 @@ const deleteBooks = async function(req, res) {
     }
 }
 
-module.exports.createBook = createBook;
-module.exports.getBooks = getBooks;
-module.exports.getBooksById = getBooksById;
-module.exports.updateBooks = updateBooks;
-module.exports.deleteBooks = deleteBooks;
+module.exports ={
+    createBook,
+    getAllBooks,
+    getBooksById,
+    updateBooks,
+    deleteBooks
+}
