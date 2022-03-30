@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 
-
 // -----------Validation Function-----------------------------------------------------------------------------------
 const isValidValue = function(value) {      //if the value is undefined or null || string that length is 0 it will return false.
     if (typeof value === 'undefined' || value === null) return false        //it checks whether the value is null or undefined.

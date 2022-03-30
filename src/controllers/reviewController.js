@@ -11,19 +11,19 @@ const createReview = async function(req, res) {
         const {reviewedBy, rating} = review
         const isValidBookId = await bookModel.findOne({_id : bookId, isDeleted:false})       //finding the bookId
         if(!isValidBookId){
-            return res.status(404).send({status:true, msg:"no book found."})      
+            return res.status(404).send({status:true, msg:"No book found."})      
         }       
         if(!validator.isValidDetails(review)){
-            return res.status(400).send({status:false, msg:"please provide review of the book"})        //review is mandatory
+            return res.status(400).send({status:false, msg:"Please provide review of the book"})        //review is mandatory
         }
         if(!validator.isValidValue(reviewedBy)){
-            return res.status(400).send({status:false, msg:"please provide who reviewed the book"})     //reviewedBy is mandatory
+            return res.status(400).send({status:false, msg:"Please provide who reviewed the book"})     //reviewedBy is mandatory
         }
         if(!validator.isValidValue(rating)){
-            return res.status(400).send({status:false, msg:"please provide the rating"})        //rating is mandatory
+            return res.status(400).send({status:false, msg:"Please provide the rating"})        //rating is mandatory
         }
         if((rating<1) || (rating>5)){       //ratings should be in between 1 to 5.
-            return res.status(400).send({status:false, msg:"rating should be greater than 1 and less than 5"})
+            return res.status(400).send({status:false, msg:"Rating should be greater than 1 and less than 5"})
         }
         const release = moment().format("YYYY-MM-DD");      //Moment for record the date & time
         const finalData = {
@@ -32,7 +32,7 @@ const createReview = async function(req, res) {
             reviewedAt : release
         }
         const data = await reviewModel.create(finalData)
-        res.status(201).send({status:true, msg:"book review saved successfully",data:data})
+        res.status(201).send({status:true, msg:"Book review saved successfully",data:data})
         
         const reviewCount = await reviewModel.find({ bookId: bookId, isDeleted:false})
         const countUpdate = await bookModel.findOneAndUpdate(
@@ -53,7 +53,7 @@ const updateReview = async function(req, res) {
         const bookId = req.params.bookId
         const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted:false})      //finding the bookId
         if (!IsValidBookId){
-            return res.status(404).send({status:true, msg:"No book found to update review."})       //
+            return res.status(404).send({status:true, msg:"No book found to update review."})      
         }
         const reviewId = req.params.reviewId        
         const IsValidReviewId = await reviewModel.findOne({_id : reviewId, isDeleted:false})        //finding the reviewId
@@ -62,7 +62,7 @@ const updateReview = async function(req, res) {
         }
         const bookIdFromReview = IsValidReviewId.bookId
         const userIdFromReview = await bookModel.findById(bookIdFromReview)
-        if (userIdFromReview.userId.toString() !== IsValidBookId.userId.toString()) {          // for similar userId from param & bookModel to update
+        if (userIdFromReview.userId.toString() !== IsValidBookId.userId.toString()) {     // for similar userId from param & bookModel to update
             return res.status(403).send({status : false, msg : "Unauthorized access. Review can't be updated"})
         }
         const dataToUpdate = req.body
@@ -90,7 +90,7 @@ const updateReview = async function(req, res) {
 const deleteReview = async function(req, res) {
     try{
         const bookId = req.params.bookId
-        const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted:false})
+        const IsValidBookId = await bookModel.findOne({_id : bookId, isDeleted:false})   //finding the bookId
         if (!IsValidBookId){
             return res.status(404).send({status:true, msg:"No book found to delete review."})
         }

@@ -33,7 +33,7 @@ const createUser = async function(req, res) {
             return res.status(400).send({status:false, msg:"Please provide Email Address"})   //email is mandory
         }
         if(!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)){
-            return res.status(400).send({status:false,msg:"Please provide valid Email Address"})    //Regex for checking the valid email format 
+            return res.status(400).send({status:false, msg:"Please provide valid Email Address"})    //Regex for checking the valid email format 
         }
         const emailUsed = await userModel.findOne({email})    //unique is email
         if(emailUsed){
@@ -72,14 +72,14 @@ const login = async function(req, res) {
         }
         const User = await userModel.findOne({email, password});   //validating the email/password in the userModel.
         if (!User){
-        return res.status(401).send({status: false, msg: "Email or Password is not correct, Please check your credentials again.",})    
+            return res.status(401).send({status: false, msg: "Email or Password is not correct, Please check your credentials again.",})    
         }  
         const token = jwt.sign(   //creating the token for the authentication.
             {
                 userId : User._id   //payload(details that we saved in this token)
             },
                 "Project-Books", { expiresIn: '30000mins' });  //secret key with the expiry
-        res.setHeader("x-api-key", token);  //setting token in header
+            res.setHeader("x-api-key", token);  //setting token in header
         res.status(200).send({ status: true, message: `User logged in successfully`, data: { token } });  
     }
     catch(err) {

@@ -31,7 +31,7 @@ const createBook = async function(req, res) {
         if (!validator.isValidValue(ISBN)){
             return res.status(400).send({status:false, msg:"Please provide the ISBN"})   //ISBN is mandory 
         }
-        const isDuplicateISBN = await bookModel.findOne({ISBN: ISBN})
+        const isDuplicateISBN = await bookModel.findOne({ISBN: ISBN})   //ISBN is unique
         if (isDuplicateISBN){
             return res.status(400).send({status:true, msg:"ISBN is already exists."})   //ISBN is unique 
         }
@@ -58,7 +58,7 @@ const createBook = async function(req, res) {
 }
 
 
-// -----------GetBooks-----------------------------------------------------------------------------------
+// -----------Get All Books-----------------------------------------------------------------------------------
 const getAllBooks = async function(req, res) {
     try{
         const querry = req.query
@@ -66,15 +66,20 @@ const getAllBooks = async function(req, res) {
             ...querry,         //store the conditions in filter variable
             isDeleted : false
         }
-        const findBooks = await bookModel.find(filter).select({title : 1, excerpt : 1, userId : 1, category : 1, releasedAt : 1, reviews : 1}).sort({title : 1})
-        //finding the book with filters
 
-        if (findBooks.length == 0){         //validating that the userId from body is similar to the token
-            return res.status(404).send({status:true, msg:"No book found."})       
+        const findBooks = await bookModel.find(filter).select({
+            title : 1, excerpt : 1, userId : 1, category : 1, releasedAt : 1, reviews : 1}).sort({title : 1})  //finding the book with filters
+        
+        if (findBooks.length == 0){
+            return res.status(404).send({status:true, msg:"No book found."})       //validating that the userId from body is similar to the token
         }
-        if (findBooks.userId != req.userId) {
-            return res.status(403).send({status: false, message: "Unauthorized access."})       //validating that the userId from body is similar to the token
-        }
+
+        if (querry.userId != req.userId) {
+            return res.status(403).send({
+                status: false,
+                message: "Unauthorized access."
+        })}
+
         res.status(200).send({status: true, msg: "Books list", data: findBooks})  
     }
     catch(err) {
@@ -137,7 +142,7 @@ const updateBooks = async function(req, res) {
             {_id : bookId},    //Find the bookId and update these title, excerpt & ISBN.
             {title : dataToUpdate.title, excerpt : dataToUpdate.excerpt, ISBN : dataToUpdate.ISBN},
             {new : true, upsert : true})    //ispublished will be true and update the date at publishAt.
-        res.status(201).send({status:true, msg: "book details updated successfully", data:updatedDetails})
+        res.status(201).send({status:true, msg: "Book details updated successfully", data:updatedDetails})
     }
     catch(err) {
         console.log(err)
