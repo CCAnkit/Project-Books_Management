@@ -62,9 +62,9 @@ const updateReview = async function(req, res) {
         }
         const bookIdFromReview = IsValidReviewId.bookId
         const userIdFromReview = await bookModel.findById(bookIdFromReview)
-        if (userIdFromReview.userId.toString() !== IsValidBookId.userId.toString()) {     // for similar userId from param & bookModel to update
-            return res.status(403).send({status : false, msg : "Unauthorized access. Review can't be updated"})
-        }
+        // if (userIdFromReview.userId.toString() !== IsValidBookId.userId.toString()) {     // for similar userId from param & bookModel to update
+        //     return res.status(403).send({status : false, msg : "Unauthorized access. Review can't be updated"})
+        // }
         const dataToUpdate = req.body
         if(!validator.isValidDetails(dataToUpdate)){
             res.status(400).send({status:false, msg:"Please provide the review details to update"})  //Validate the value that is provided by the Client.
@@ -99,11 +99,11 @@ const deleteReview = async function(req, res) {
         if (!IsValidReviewId){
             return res.status(404).send({status:true, msg:"no review exists to delete."})
         }
-        const bookIdFromReview = IsValidReviewId.bookId
-        const userIdFromReview = await bookModel.findById(bookIdFromReview)
-        if (userIdFromReview.userId.toString() !== IsValidBookId.userId.toString()) {     //for checking the similar userId from params or bookModel.
-            return res.status(403).send({status : false, msg : "Unauthorized access. Review can't be delete"})
-        }
+        // const bookIdFromReview = IsValidReviewId.bookId
+        // const userIdFromReview = await bookModel.findById(bookIdFromReview)
+        // if (userIdFromReview.userId.toString() !== IsValidBookId.userId.toString()) {     //for checking the similar userId from params or bookModel.
+        //     return res.status(403).send({status : false, msg : "Unauthorized access. Review can't be delete"})
+        // }
 
         const deletedData = await reviewModel.findOneAndUpdate(
             {_id : reviewId},     //finding the reviewId and mark the isDeleted to true & update the date at deletedAt.

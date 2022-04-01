@@ -73,7 +73,7 @@ const getAllBooks = async function(req, res) {
         if (findBooks.length == 0){
             return res.status(404).send({status:true, msg:"No book found."})       //validating that the userId from body is similar to the token
         }
-
+        
         if (querry.userId != req.userId) {
             return res.status(403).send({
                 status: false,

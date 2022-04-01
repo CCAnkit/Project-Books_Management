@@ -20,9 +20,9 @@ router.delete("/books/:bookId", middleware.userAuth, bookController.deleteBooks)
 
 
 //Review API's
-router.post("/books/:bookId/review", /*middleware.userAuth,*/ reviewCrontroller.createReview);   //CreateReview
-router.put("/books/:bookId/review/:reviewId", /*middleware.userAuth,*/ reviewCrontroller.updateReview);   //UpdateReview
-router.delete("/books/:bookId/review/:reviewId", /*middleware.userAuth,*/ reviewCrontroller.deleteReview);   //DeleteReview
+router.post("/books/:bookId/review",  reviewCrontroller.createReview);   //CreateReview
+router.put("/books/:bookId/review/:reviewId",  reviewCrontroller.updateReview);   //UpdateReview
+router.delete("/books/:bookId/review/:reviewId", reviewCrontroller.deleteReview);   //DeleteReview
 
 
 module.exports = router;
